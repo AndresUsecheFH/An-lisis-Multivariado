@@ -1,0 +1,442 @@
+---
+title: "MULTIVEREADO 1 CORTE"
+author: "Andres Useche"
+date: "2025-03-12"
+output: word_document
+---
+ANÁLISIS MULTIVARIADO
+
+TEMAS Y FORMULAS EN R
+
+DATOS:contenido bolsas
+```{r}
+cont
+hist(cont)
+```
+
+Anderson-Darling
+Para revisar si una muestra de una variable es normal o no
+```{r}
+ad.test(cont)
+```
+H0:X es normal
+H1:X no es normal
+Cuando p<alpha Se rechaza H0, Cuando p>alpha no hay evidencia suficiente para rechazar H0
+
+En este caso 0.009<0.05, Por lo tanto se rechaza H0, Los datos no siguen una distribución normal
+
+
+PRUEBA DE SHAPIRO WILKS
+H0: Los datos provienen de una distribuciión normal
+H1 Los datos NO provienen de una districución normal
+Si p<alpha se rechaza H0
+La estadística W de Shapiro-Wilk varía entre 0 y 1:
+W cercano a 1 indica que los datos son aproximadamente normales.
+W cercano a 0 indica que los datos se desvían significativamente de una distribución normal.
+Sin embargo tener un W alto, no siempre signitica que son normales, como en este ejemplo.
+
+
+```{r}
+
+#prueba de shapiro wilks
+shapiro.test(cont)
+```
+p<alpha se rechaza H0, Los datos no siguen una distribución normal
+
+
+
+GRAFICO QQ
+
+
+```{r}
+
+#grafico QQ
+#paquete stats
+library(stats)
+qqnorm(cont,xlab="percentiles teóricos",ylab="percentiles muestrales",
+       pch=16,cex=2,
+       cex.lab=1.5,cex.axis=1.5, main="grafico QQ")
+#para la línea de referencia
+qqline(cont,distribution=qnorm,col="red",lwd=3)
+
+#explicación: 
+#pch (símbolo de los puntos) /cex (tamaño de los puntos)
+#cex.lab (tamaño letras ejes) /cex.axis (tamaño numeros de los ejes)
+#xlim y ylim (rango de valores a considerar en los ejes)
+
+
+
+```
+
+CORRELACIÓN ENTRE VARIABLES(muestras)
+Pearson
+p<0.01se rechaza H0, Es decir que entonces existe correlación entre las variables
+```{r}
+
+#análisis de los percentiles 
+
+#parametros de la distribucion normal
+m=mean(cont)
+s=sd(cont)
+
+#numero de datos
+n=length(cont)
+
+#ordena los datos
+cont_ord=sort(cont)
+
+#percentiles teóricos
+i=1:n
+orden=(i-0.5)/n
+q=qnorm(orden,m,s)
+
+#correlación entre datos (percentiles muestrales) y percentiles
+#teoricos
+cor.test(cont_ord,q,conf.level=0.99)
+
+
+
+```
+
+PRUEBA DE ROYSTON
+DATOS:ciudades
+```{r}
+head(ciudades)
+```
+
+p<alpha se rechaza H0
+H0: Las varibles siguen una distribucion normal
+H1: Las variables NO siguen una distribucion normal
+
+```{r}
+#analisis base de datos ciudades
+
+#paquete MVN
+
+#ibrary(MVN)
+#Prueba de Royston
+
+mvn(ciudades,mvnTest="royston")
+
+```
+GRAFICO JI-CUADRADO
+
+
+
+```{r}
+
+#grafico ji-cuadrado
+mvn(ciudades,multivariatePlot="qq")
+```
+
+
+
+
+
+
+ GRAFICOS
+ 
+ 
+ Ejercicio:El grupo de investigación de mercado de una
+importante compañía productora de cervezas
+realizó un estudio de mercado. Al analizar los
+segmentos de mercado de cada uno de los tipos
+de cerveza que producen estaban interesados
+en determinar si las preferencias por un tipo
+específico de cerveza dependía del género del
+consumidor. En caso de que las preferencias
+fueran independientes del género del
+consumidor, iniciarían una campaña publicitaria
+para todas las cervezas de la compañía. Pero, si
+las preferencias por los distintos tipos de
+cerveza dependían del género del consumidor,
+la empresa ajustaría sus promociones a los
+mercados. Para analizar este problema tomaron
+una muestra de consumidores con los
+resultados siguientes:
+Explore utilizando los perfiles
+(de hombres y mujeres) si se
+observan diferencias en las
+preferencias entre los sexos
+Recuerde: Las
+proporciones son
+promedios
+
+
+BASE DE DATOS: cerveza
+
+```{r}
+head(M)
+head(T1)
+```
+
+
+
+```{r}
+#perfiles con grafico  de lineas (poligonal)
+
+#M matriz con los datos cerveza
+#digitar los datos.
+#=matrix(nr=2 , nc= 3 )
+#ata.entry(M)
+
+#nombres
+#ownames(M)=c("hombres","mujeres")
+#olnames(M)=c("ligera","clara","oscura")
+
+#calculo proporciones por columna (valores por sexo)
+T1=round(prop.table(M,2),3)
+
+#al escribir prop.table(M,2) indico que las
+#proporciones son por columna
+#por fila seria prop.table(M,1)
+#datos a representar
+# Ver las proporciones por cada sexo
+T1[1, ]  # Proporciones de cerveza para hombres
+T1[2, ]  # Proporciones de cerveza para mujeres
+T1        # Ver todas las proporciones
+
+#para los perfiles con l?neas:
+#cargar paquete profileR y activarlo:
+library(profileR)
+
+#el comando con matrices
+T1=as.matrix(T1)
+
+
+
+```
+
+```{r}
+
+# el gr?fico. 
+# Atencion: No se estandariza porque los datos ya lo est?n, 
+# si no hay habr?a que hacerlo
+profileplot(T1,person.id=rownames(T1),standardize=FALSE)
+```
+
+
+
+
+EJERCICIO
+
+Datos: examenes
+Problema de rendimiento académico
+Estudio de resultados docentes en un curso de estadística
+Interés del estudio: ver si se observandiferencias en los
+resultados en dos parciales en dependencia de si la nota final
+fue superior a 80 puntos o no
+Variables
+grupo: 1 (nota final > 80)
+2 (nota final  80)
+P1: nota parcial 1
+P2: nota parcial 2
+
+```{r}
+attach(res)
+head(res)
+```
+
+
+
+```{r}
+mean(P1[grupo==1])
+mean(P1[grupo==2])
+mean(P2[grupo==1])
+mean(P2[grupo==2])
+
+```
+```{r}
+M=matrix(nr=2 , nc=2)
+data.entry(M)
+
+rownames(M)=c("grupo 1","grupo 2")
+colnames(M)=c("Parcial 1","Parcial 2")
+
+#el grafico
+library(profileR)
+
+profileplot(M,person.id=rownames(M),standardize=FALSE)
+
+```
+GRAFICO DE RADAR
+
+EJEMPLO CERVEZA
+
+```{r}
+#M matriz del ejemplo 
+M=matrix(c(20,40,30,30,30,10),nr=2,nc=3,byrow=TRUE)
+rownames(M)=c("hombres","mujeres")
+colnames(M)=c("ligera","clara","oscura")
+M1=round(prop.table(M,2),3)
+
+```
+
+```{r}
+
+#desde ac? es el procedimiento: 
+#M1 en este caso es proporciones
+#en general debe ser una matriz normalizada
+
+#defino m?ximos y m?nimos, en el caso de las cervezas 
+# como son proporciones  
+#los pongo a 0,1. utilizo el comando de repetir 
+f1=rep(1,3)
+f2=rep(0,3)
+#datos finales
+MF=rbind(f1,f2,M1)
+#lo convierto a marco de datos
+D=as.data.frame(MF)
+
+#le pongo nombre a las filas que a?ad?
+rownames(D)[1]="max"
+rownames(D)[2]="min"
+
+#cargo el paquete
+library(fmsb)
+
+#para poner los graficos juntos (decido la posici?n)
+par(mfrow=c(2,1))
+
+#grafico de los hombres (filas 1,2 y 3)
+radarchart(D[1:3,],pcol="red",plwd=3,vlcex = 1.2,title="hombres")
+
+#grafico de las mujeres (filas1,2,4)
+x=c(1,2,4)
+radarchart(D[x,],pcol="blue",plwd=3,vlcex = 1.2,title="mujeres")
+
+#significado
+#pcol: color de la linea
+#plwd: ancho de la linea
+#vlcex:tama?o fuente etiqueta
+
+
+#otra forma
+#grafico de  todos juntos y les pongo relleno
+radarchart(D,pcol=c("red","blue" ),pfcol=alpha(c("pink","light blue"),0.3) ,plwd=3,vlcex = 1.2)
+
+#para identificarlos, una leyenda
+colores=c("red","blue" )
+legend(x=0.7, y=1, legend = rownames(D[-c(1,2),]), pch=20 , col=colores , text.col = "grey", cex=1.2, pt.cex=3) 
+
+
+
+```
+
+
+La tabla siguiente muestra los resultados de promedios de 4
+grupos de estudiantes de una misma escuela en 5 exámenes
+finales
+Estudiante A1 A2 A3 A4 A5
+a 5 23 4 75 2.1
+b 2 50 1.2 94 4.8
+f 1.5 48 1.9 92 4.4
+j 0.5 7 0.4 20 1.2
+Los datos
+deben
+estandarizarse
+Trabajando con los
+datos estandarizados
+continuar la
+construcción del
+gráfico
+
+Problema: Construya un diagrama de radar para
+representar el desempeño de los grupos y analice
+semejanzas y deferencias.
+Los exámenes A1, A3 y A5 se califican de 0 a 5
+El examen A2 se califica de 0 a 50
+El examen A4 se califica de 0 a 100
+```{r}
+#digitar
+M=matrix(nr=4,nc=5)
+data.entry(M)
+
+#nombres
+rownames(M)=c("a", "b","C","d")
+colnames(M)=c("A1","A2","A3","A4","A5")
+
+```
+
+```{r}
+
+#los datos deben estandarizarse
+library(BBmisc)
+
+#los estandarizo
+M1=normalize(M,method="range",range=c(0.5,1.5),margin=2)
+
+#agrego maximos (1.5) y minimos (0.5)
+f1=rep(1.5,4)
+f2=rep(0.5,4)
+#datos finales
+M1F=rbind(f1,f2,M1)
+#lo convierto a marco de datos
+D=as.data.frame(M1F)
+#le pongo nombre a las filas que agregue?
+rownames(D)[1]="max"
+rownames(D)[2]="min"
+
+
+#graficos, son 4
+#cargo el paquete
+library(fmsb)
+
+#para poner los graficos juntos (decido la posicion)
+par(mfrow=c(2,2))
+
+#grafico de estudiante a (filas 1,2 y 3)
+radarchart(D[1:3,],pcol="red",plwd=3,vlcex = 1.2,title="est a")
+
+#grafico de estudiante b (filas1,2,4)
+x=c(1,2,4)
+radarchart(D[x,],pcol="blue",plwd=3,vlcex = 1.2,title="est b")
+
+#grafico de estudiante c (filas1,2,4)
+x=c(1,2,5)
+radarchart(D[x,],pcol="green",plwd=3,vlcex = 1.2,title="est f")
+
+#grafico de estudiante b (filas1,2,4)
+x=c(1,2,6)
+radarchart(D[x,],pcol="magenta",plwd=3,vlcex = 1.2,title="est j")
+
+```
+
+
+
+PRUEBA DE BOX
+Sirve para determinar si las matrices de covarianza spn iguales
+Datos: ciudades
+
+
+```{r}
+#prueba de Box
+#paquete mvhtests
+#library(mvhtests)
+
+#se necesita digitar en data y group las posiciones de las variables
+#visualización de la base de datos
+
+head(ciudadesM)
+
+```
+
+```{r}
+
+#instruccion prueba de Box
+x=as.matrix(ciudadesM[ ,2:7])
+ina=ciudadesM[ ,1]
+Mtest.cov(x,ina)
+
+#detalles de las instrucciones
+#x matriz de datos
+#ina vector con los grupos de datos
+
+
+```
+H0: Las matrices de los grupos iguales
+
+En este caso p<alpha, Por lo tanto se rechaza H0
+
+
+
