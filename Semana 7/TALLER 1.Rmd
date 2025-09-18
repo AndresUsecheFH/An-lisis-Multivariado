@@ -1,0 +1,406 @@
+---
+title: "TALLER 1 Analisis Multivariado"
+author: "Andres Useche - Rafael Torregroza"
+output:
+  pdf_document: default
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+
+a. Analice la normalidad del vector aleatorio y de sus componentes.
+
+```{r setup, include=FALSE}
+load("examenes - Copy (2).RData")
+
+```
+
+```{r}
+attach(examenes)
+```
+
+```{r}
+head(examenes)
+```
+
+```{r}
+
+
+#paquete MVN
+
+library(MVN)
+#Prueba de Royston
+
+mvn(examenes,mvnTest="royston",alpha=0.01)
+```
+H0: Los datos siguen una distribución normal
+H1: Los datos NO siguen una distribución normal
+
+Por la prueba de Royston el p-valor de de 0.1169  p>alpha, por lo tanto no se rechaza H0, es decir que no hay evidencia suficiente para decir que los datos no siguen una distribucción normal. Ademas en el analisis indivual que se le hace a cada variable con la prueba de Anderson-Darling en todos los casos p>alpha lo cual verifica lo anteriormente mencionado
+```{r}
+
+#grafico ji-cuadrado
+mvn(examenes,multivariatePlot="qq")
+```
+Se puede observar que los datos estan juntos a la linea guia, por lo tanto es un buen medio visual para verificar que los datos siguen una distribución normal
+
+b. 
+```{r}
+library(MVTests)  # Carga el paquete
+#evaluacion de la pertenencia a la region de confianza
+
+#calculo del percentil
+#caracteristicas de la base de datos
+
+str(examenes)
+
+#Valores
+n= 22
+p=3
+alfa=0.01
+
+#percentil
+((n-1)*p*qf(1-alfa,p,n-p))/(n-p)
+
+#valor observado del estadístico
+
+#vector de medias muestrales
+med=colMeans(examenes[ , 1:3])
+
+#matriz de varianzas y covarianzas
+S=cov(examenes[ , 1:3])
+
+#valor donde se evalúa:
+mu=c(79,80,81)
+
+#valor del estadístico en mu
+u=med-mu
+OneSampleHT2(examenes,mu,alpha = 0.01)
+n*t(u)%*%solve(S)%*%(u)#Verificación
+```
+
+Percentil= 16.61 Estadistico= 2.3415   2.3415<16.61, Por lo tanto la estimación esta dentro de la región de confianza
+Para el problema significa que que la nueva metodologia NO  tiene cambios con respecto a la anterior
+
+c. 
+```{r}
+
+#Intervalos de confianza simultaneos
+
+#se calculan los estadisticos
+
+#vector de medias muestrales
+med=colMeans(examenes[ , 1:3])
+
+#matriz de varianzas y covarianzas
+S=cov(examenes[ , 1:3])
+
+#el percentil
+#datos para el calculo
+n=32
+p=3
+alfa=0.01
+p_alfa=((n-1)*p*qf(1-alfa,p,n-p))/(n*(n-p))
+  
+#limites de confianza para la primera variable F
+#limite superior
+med[1]+sqrt(p_alfa*S[1,1])
+#limite inferior
+med[1]-sqrt(p_alfa*S[1,1])
+
+#limites de confianza para la segunda variable P1
+#limite superior
+med[2]+sqrt(p_alfa*S[2,2])
+#limite inferior
+med[2]-sqrt(p_alfa*S[2,2])
+
+#limites de confianza para la tercera variable P2
+#limite superior
+med[3]+sqrt(p_alfa*S[3,3])
+#limite inferior
+med[3]-sqrt(p_alfa*S[3,3])
+
+
+
+```
+Intervalo de F: (73.8441 , 88.88318)
+Intervalo de P1: (76.92957 , 87.61588)
+Intervalo de P2: (75.9197 , 89.8074)
+
+Para F 73.8441<78<88.88318
+Para la media estimada de P1: 76.92957<80<87.61588
+Para la media estimada de P2: 75.9197<81<89.8074
+
+d. 
+
+```{r}
+#install.packages("MVTests")  # Instala el paquete
+library(MVTests)  # Carga el paquete
+
+OneSampleHT2(examenes[,1:3],c(78,80,81),alpha=0.01)
+```
+H0: media=media estimada
+h1: media diferente a media estimada
+p-valor = 0.344 por lo tanto p>alpha, lo que quiere decir que no se rechaza H0, lo que quiere dedir que se siguen manteniendo los mismo resultados en los promedios de los examenes
+
+
+e. Como conclusión de su análisis, que le comentaría a la dirección de la Facultad sobre la
+efectividad de sus cambios metodológicos.
+
+Segun los analisis realizados con sus respectivas justificaciones anteriores, con un nivel de confianza del 99% en todos los analisis, es posible dar una respuesta concreta ya que en la Prueba de Región de confianza, la media estimada estaba dentro de la región,lo que quiere decir que las medias NO cambian y por lo tanto el nuevo metodo funciona, al realizar la prueba de hipotesis, No se rechaza H0, por lo cual las medias estimadas no cambian, esto tiene coherencia con los intervalos de las medias de cada variable, ya que todas las medias estimadas, estan dentro de los intervalos.
+
+Pregunta 2 El archivo alimentacion contiene información sobre datos del consumo per
+cápita de ciertos alimentos en 29 países europeos alrededor de 1970. Adicionalmente se dispone
+de información sobre el régimen político de cada país. Las variables consideradas son:
+com: 1 si el país en ese momento era comunista; 2 si no
+Red_Meat: Consumo de carnes rojas
+White_Meat: Consumo de carnes blancas
+Eggs: Consumo de huevos
+Milk: Consumo de leche
+Fish: Consumo de pescado
+
+
+```{r}
+load("alimentacion.RData")
+```
+
+
+```{r}
+head(alim)
+```
+
+DIAGRAMA DE RADAR
+
+
+```{r}
+# Cargar la libreríalibrary(BBmisc)
+
+# Usar datos directamente sin 'attach()' para evitar problemas
+comunistas <- alim[alim$com == 1, ]
+no_comunistas <- alim[alim$com == 2, ]
+
+# Calcular las medias para cada grupo, excluyendo la columna 'com'
+medias_comunistas <- colMeans(comunistas[, -1], na.rm = TRUE)
+medias_no_comunistas <- colMeans(no_comunistas[, -1], na.rm = TRUE)
+
+# Convertir las medias en matrices para poder asignar nombres de fila
+medias_comunistas <- matrix(medias_comunistas, nrow = 1)
+medias_no_comunistas <- matrix(medias_no_comunistas, nrow = 1)
+
+# Asignar los nombres de fila apropiados
+rownames(medias_comunistas) <- "Comunistas"
+rownames(medias_no_comunistas) <- "No_Comunistas"
+
+# Unir las matrices de medias en una matriz final
+medias <- rbind(medias_comunistas, medias_no_comunistas)
+
+# Nombres de las columnas que representan los alimentos
+colnames(medias) <- c("Red_Meat", "White_Meat", "Eggs", "Milk", "Fish")
+
+# Ver la matriz final con los nombres de las filas correctamente asignados
+print(medias)
+
+# Definir los valores máximos y mínimos
+f1 = rep(25, 5)  # fila de máximos
+f2 = rep(0, 5)   # fila de mínimos
+
+# Convertir 'f1' y 'f2' en matrices para asegurar que las filas sean del mismo tipo
+f1 <- matrix(f1, nrow = 1)
+f2 <- matrix(f2, nrow = 1)
+
+# Unir las filas f1, f2 y las medias
+M1C = rbind(f1, f2, medias)
+
+# Convertir a marco de datos
+M1C = as.data.frame(M1C)
+
+# Asignar nombres a las filas
+rownames(M1C)[1] = "max"   # Renombramos la fila 1 a "max"
+rownames(M1C)[2] = "min"   # Renombramos la fila 2 a "min"
+
+# Asignar nombres de columnas
+colnames(M1C) <- c("Red_Meat", "White_Meat", "Eggs", "Milk", "Fish")
+
+# Ver la matriz final
+print(M1C)
+
+
+
+
+```
+```{r}
+
+#graficos, son 4
+#cargo el paquete
+library(fmsb)
+
+#para poner los graficos juntos (decido la posicion)
+par(mfrow=c(1,2))
+
+#grafico de estudiante a (filas 1,2 y 3)
+radarchart(M1C[1:3,],pcol="red",plwd=3,vlcex = 1.2,title="Comunistas")
+
+#grafico de estudiante b (filas1,2,4)
+x=c(1,2,4)
+radarchart(M1C[x,],pcol="blue",plwd=3,vlcex = 1.2,title="No Comunistas")
+
+```
+
+```{r}
+
+library(profileR)
+profileplot(M1C,person.id=rownames(M1C),standardize=FALSE)
+
+```
+
+Gracias a los graficos anteriores, se realiza un primer acercamiento a las diferencias del consumo de los paises comunistas y no comunistas. Los paises comunistas siempre tienen a consumir mas, sobre todo consumen mas leche, carne Roja y pescado
+
+VERIFICAR QUE LOS DATOS SEAN NORMALES
+```{r}
+
+# Instalar y cargar el paquete MVN
+#install.packages("MVN")
+library(MVN)
+
+# Filtrar los datos de acuerdo con la columna 'com'
+comunistas <- alim[alim$com == 1, ]
+no_comunistas <- alim[alim$com == 2, ]
+
+
+
+```
+
+```{r}
+
+# Aplicar la prueba de Royston a cada grupo
+# Para los comunistas
+resultados_comunistas <- mvn(comunistas[, 2:6], mvnTest = "royston",alpha=0.01)
+
+# Para los no comunistas
+resultados_no_comunistas <- mvn(no_comunistas[, 2:6], mvnTest = "royston", alpha=0.01)
+
+# Imprimir los resultados
+print("Resultados de la prueba de Royston para los comunistas:")
+print(resultados_comunistas)
+
+print("Resultados de la prueba de Royston para los no comunistas:")
+print(resultados_no_comunistas)
+
+```
+
+H0: Los datos siguen una distribución normal
+H1: Los datos NO siguen una distribución normal
+
+Las muestras de las dos poblaciones siguen una distribución normal, en cada prueba p>alpha, por lo tanto no se rechaza H0
+
+PRUEBA DE HIPOTESIS
+
+
+```{r}
+
+#prueba de Box
+library(mvhtests)
+x=as.matrix(alim[ ,2:6])
+ina=alim[ ,1]
+Mtest.cov(x,ina, a=0.01)
+
+```
+H0: Las varianzas de los grupos son iguales
+p>alpha, por lo tanto no rechazo H0
+```{r}
+
+#Prueba Hotelling dos poblaciones
+#library(MVTests)
+TwoSamplesHT2(alim[,2:6],alim$com, alpha=0.01 )
+```
+REGIÓN DE CONFIANZA
+H0: Las medias de las 2 poblaciones son iguales
+H1:Las medias de las 2 poblaciones son diferentes
+p valor = 0.0002 p<alpha por lo tanto se rechaza H0, es decir que con una confianza del 99% las medias de los comunistas son diferentes a las medias de los No comunistas
+
+```{r}
+
+
+#para saber cuantos datos hay
+attach(alim)
+table(com)
+#percentil
+n1=9
+n2=16
+p=2
+alfa=0.01
+c=((n1+n2-2)*p*qf(1-alfa,p,n1+n2-p-1))/(n1+n2-p-1)
+
+#calculo del valor del estadistico
+
+
+#matriz varianzas y cov combinada
+S1=cov(alim[alim$com==1,2:6])
+S2=cov(alim[alim$com==1,2:6])
+Scomb=((n1-1)*S1+(n2-1)*S2 )/(n1+n2-2)
+
+St=((1/n1)+(1/n2))*Scomb
+
+#Medias del vector (Comunista, No comunista) en cada grupo
+Med1=colMeans(alim[alim$com==1,2:6])
+Med2=colMeans(alim[alim$com==2,2:6])
+Med1
+Med2
+
+
+```
+
+
+INTERVALOS SIMULTANEOS PARA LA DIFERENCIA DE MEDIAS
+
+```{r}
+
+#intervalos de confianza simultáneos
+#usando lo ya calculado
+
+#Para cerrada
+#hago dif para mas comodidad
+dif=Med1-Med2
+#para cerrada
+#LI
+dif[1]-sqrt(c*St[1,1])
+#LS
+dif[1]+sqrt(c*St[1,1])
+
+#para abierta
+#LI
+dif[2]-sqrt(c*St[2,2])
+#LS
+dif[2]+sqrt(c*St[2,2])
+
+#para abierta
+#LI
+dif[3]-sqrt(c*St[3,3])
+#LS
+dif[3]+sqrt(c*St[3,3])
+
+#para abierta
+#LI
+dif[4]-sqrt(c*St[4,4])
+#LS
+dif[4]+sqrt(c*St[4,4])
+
+#para abierta
+#LI
+dif[5]-sqrt(c*St[5,5])
+#LS
+dif[5]+sqrt(c*St[5,5])
+
+```
+La diferencia de medias de las poblaciones de cada varible con un99% de confianza estan en estos intervalos.
+
+Red_Meat: (-6.424014, -0.6426524)
+White_Meat: (-5.92487, 5.173481)
+Eggs: (-2.732333, 0.1545551)
+Milk: (-13.52932, -2.792903)
+Fish: (-6.242939, -1.34595)
+
+El unico intervalo que contiene el 0,(es decir que su diferencia de medias puede ser 0)casi en la mitad es La carne Blanca, el resto de intervalos de las variables, siempre va a tender a tener una diferencia en sus medias. Esto tiene sentido, ya que como se puede ver en los graficos de radar y de lineas, las unicas medias que mas se asemejan son las de la carne blanca
+
+Por lo tanto sustentado por los analisis y justificaciones anterioes se puede afirmar que existen diferencias en los consumos medios de los paises comunistas y no comunistas.
